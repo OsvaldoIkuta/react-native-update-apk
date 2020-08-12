@@ -55,11 +55,11 @@ export class UpdateAPK {
         if (this.options.forceUpdateApp) {
           this.options.forceUpdateApp();
         }
-        this.downloadApk(remote);
+        this.checkApkExist(remote);
       } else if (this.options.needUpdateApp) {
         this.options.needUpdateApp(isUpdate => {
           if (isUpdate) {
-            this.downloadApk(remote);
+            this.checkApkExist(remote);
           }
         }, remote.whatsNew);
       }
@@ -67,6 +67,21 @@ export class UpdateAPK {
       this.options.notNeedUpdateApp();
     }
   };
+
+  checkApkExist = remote => {
+    const filePath = `${RNFS.CachesDirectoryPath}/NewApp.apk`;
+    RNFS.exists(filePath)
+        .then((res) => {
+          if (res) {
+            RNFS.unlink(filePath)
+              .then(() => console.log('FILE DELETED'));
+              this.downloadApk(remote);
+            return;
+          }
+          this.downloadApk(remote);
+          return;
+        }) 
+  }
 
   downloadApk = remote => {
     const RNFS = require("react-native-fs");
