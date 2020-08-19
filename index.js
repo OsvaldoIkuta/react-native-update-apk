@@ -4,6 +4,7 @@ import { NativeModules, Platform } from "react-native";
 
 const RNUpdateAPK = NativeModules.RNUpdateAPK;
 const RNFS = require("react-native-fs");
+const downloadDestPath = `${RNFS.CachesDirectoryPath}/NewApp.apk`;
 
 let jobId = -1;
 
@@ -70,11 +71,10 @@ export class UpdateAPK {
   };
 
   checkApkExist = remote => {
-    const filePath = `${RNFS.CachesDirectoryPath}/NewApp.apk`;
-    RNFS.exists(filePath)
+    RNFS.exists(downloadDestPath)
         .then((res) => {
           if (res) {
-            RNFS.unlink(filePath)
+            RNFS.unlink(downloadDestPath)
               .then(() => console.log('FILE DELETED'));
               this.downloadApk(remote);
             return;
@@ -97,7 +97,7 @@ export class UpdateAPK {
     const progressDivider = 1;
     // You must be sure filepaths.xml exposes this path or you will have a FileProvider error API24+
     // You might check {totalSpace, freeSpace} = await RNFS.getFSInfo() to make sure there is room
-    const downloadDestPath = `${RNFS.CachesDirectoryPath}/NewApp.apk`;
+    //const downloadDestPath = `${RNFS.CachesDirectoryPath}/NewApp.apk`;
 
     let options = this.options.apkOptions ? this.options.apkOptions : {};
 
@@ -158,6 +158,13 @@ export class UpdateAPK {
         jobId = -1;
       });
   };
+
+  installNow = () => {
+    RNUpdateAPK.showModal(
+      downloadDestPath,
+      this.options.fileProviderAuthority
+    );
+  }
 
   getAppStoreVersion = () => {
     if (!this.options.iosAppId) {
