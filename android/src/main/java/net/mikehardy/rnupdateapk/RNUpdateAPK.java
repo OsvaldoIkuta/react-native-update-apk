@@ -126,8 +126,58 @@ public class RNUpdateAPK extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void installApk(String filePath, String fileProviderAuthority) {
+    public void showModal(final String filePath, final String fileProviderAuthority) {
+        final AlertDialog alertDialog = new AlertDialog.Builder(reactContext.getCurrentActivity()).create();
+        alertDialog.setTitle("Atenção!");
+        alertDialog.setMessage("Uma nova versão do aplicativo está disponível. Vamos instalar agora!");
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Ok",
+            new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    //this.installApk(filePath, fileProviderAuthority);
+                    File file = new File(filePath);
+                    if (!file.exists()) {
+                        Log.e("RNUpdateAPK", "installApk: file doe snot exist '" + filePath + "'");
+                        // FIXME this should take a promise and fail it
+                        return;
+                    }
 
+                    if (Build.VERSION.SDK_INT >= 24) {
+                        // API24 and up has a package installer that can handle FileProvider content:// URIs
+                        Uri contentUri;
+                        try {
+                            contentUri = FileProvider.getUriForFile(getReactApplicationContext(), fileProviderAuthority, file);
+                        } catch (Exception e) {
+                            // FIXME should be a Promise.reject really
+                            Log.e("RNUpdateAPK", "installApk exception with authority name '" + fileProviderAuthority + "'", e);
+                            throw e;
+                        }
+                        Intent installApp = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                        installApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        installApp.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        installApp.setData(contentUri);
+                        installApp.putExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME, reactContext.getApplicationInfo().packageName);
+                        reactContext.startActivity(installApp);
+                    } else {
+                        // Old APIs do not handle content:// URIs, so use an old file:// style
+                        String cmd = "chmod 777 " + file;
+                        try {
+                            Runtime.getRuntime().exec(cmd);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setDataAndType(Uri.parse("file://" + file), "application/vnd.android.package-archive");
+                        reactContext.startActivity(intent);
+                    }
+                    dialog.dismiss();
+                }
+            });
+        alertDialog.show();
+    }
+
+    @ReactMethod
+    public void installApk(String filePath, String fileProviderAuthority) {
         File file = new File(filePath);
         if (!file.exists()) {
             Log.e("RNUpdateAPK", "installApk: file doe snot exist '" + filePath + "'");
