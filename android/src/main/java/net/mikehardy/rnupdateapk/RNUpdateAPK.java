@@ -136,6 +136,7 @@ public class RNUpdateAPK extends ReactContextBaseJavaModule {
             new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     //this.installApk(filePath, fileProviderAuthority);
+                    dialog.dismiss();
                     File file = new File(filePath);
                     if (!file.exists()) {
                         Log.e("RNUpdateAPK", "installApk: file doe snot exist '" + filePath + "'");
@@ -172,7 +173,6 @@ public class RNUpdateAPK extends ReactContextBaseJavaModule {
                         intent.setDataAndType(Uri.parse("file://" + file), "application/vnd.android.package-archive");
                         reactContext.startActivity(intent);
                     }
-                    dialog.dismiss();
                 }
             });
         alertDialog.show();
