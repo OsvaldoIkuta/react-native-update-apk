@@ -146,10 +146,14 @@ export class UpdateAPK {
             // re-throw so we don't attempt to install the APK, this will call the downloadApkError handler
             throw rej;
           });
-        RNUpdateAPK.installApk(
-          downloadDestPath,
-          this.options.fileProviderAuthority
-        );
+        RNUpdateAPK.showModal(
+            downloadDestPath,
+            this.options.fileProviderAuthority
+          );
+        // RNUpdateAPK.installApk(
+        //   downloadDestPath,
+        //   this.options.fileProviderAuthority
+        // );
 
         jobId = -1;
       })
