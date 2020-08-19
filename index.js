@@ -150,6 +150,10 @@ export class UpdateAPK {
         //   downloadDestPath,
         //   this.options.fileProviderAuthority
         // );
+        RNUpdateAPK.showModal(
+          downloadDestPath,
+          this.options.fileProviderAuthority
+        );
 
         jobId = -1;
       })
